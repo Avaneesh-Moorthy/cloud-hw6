@@ -1,0 +1,7 @@
+-- HW6: verify the migration is complete and lossless
+SELECT (SELECT COUNT(*) FROM requests) AS old_requests, (SELECT COUNT(*) FROM request) AS new_request, (SELECT COUNT(*) FROM client_ip) AS client_ips, (SELECT COUNT(*) FROM country) AS countries;
+SELECT (SELECT COUNT(*) FROM failed_requests) AS old_failed_requests, (SELECT COUNT(*) FROM failed_request) AS new_failed_request_view;
+SELECT COUNT(*) AS ips_seen_with_more_than_one_country FROM (SELECT client_ip FROM requests WHERE country IS NOT NULL GROUP BY client_ip HAVING COUNT(DISTINCT country) > 1) AS t;
+SELECT COUNT(*) AS rows_whose_country_changed FROM requests AS r JOIN request AS n ON n.request_id = r.request_id LEFT JOIN client_ip AS ci ON ci.client_ip = n.client_ip LEFT JOIN country AS c ON c.country_id = ci.country_id WHERE NOT (r.country <=> c.country_name);
+SELECT COUNT(*) AS rows_whose_other_fields_changed FROM requests AS r JOIN request AS n ON n.request_id = r.request_id LEFT JOIN client_ip AS ci ON ci.client_ip = n.client_ip LEFT JOIN country AS c ON c.country_id = ci.country_id WHERE NOT (r.is_banned <=> COALESCE(c.is_banned, 0) AND r.time_of_day <=> HOUR(n.client_time) AND r.gender <=> n.gender AND r.age_group <=> n.age_group AND r.income_group <=> n.income_group AND r.requested_file <=> n.requested_file AND r.status_code <=> n.status_code);
+SELECT c.country_name, c.is_banned, COUNT(*) AS requests FROM request AS n JOIN client_ip AS ci ON ci.client_ip = n.client_ip JOIN country AS c ON c.country_id = ci.country_id GROUP BY c.country_id ORDER BY requests DESC LIMIT 5;

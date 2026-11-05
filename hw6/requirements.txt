@@ -1,0 +1,6 @@
+cloud-sql-python-connector[pymysql]
+SQLAlchemy
+google-cloud-secret-manager
+google-cloud-storage
+pandas
+scikit-learn
